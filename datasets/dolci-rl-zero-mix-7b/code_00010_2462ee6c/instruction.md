@@ -1,0 +1,4 @@
+You are tasked with implementing a function called `naked_locate` that identifies the file path to a specified file in a predefined project directory structure. The utility should accept a single argument, which is the name of the file. The function should return the file path if the file is found in the project directory, or return 'File not found' if it is not. The following files exist in the project directory: 'README.md', 'app.py', and 'styles.css'. You can assume that the project directory path is fixed as '/path/to/project'. Implement the function `naked_locate(file_name)` which takes a string `file_name` as input and returns the appropriate file path or 'File not found'.
+
+---
+Write your Python solution to the file `/app/solution.py`. It must define the required function(s) at module top level so they can be imported and called directly.

@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+build/
+dist/
+
+# Hugging Face / datasets cache
+.cache/
+*.parquet
+
+# Adapter local artifacts
+adapters/*/jobs/
+adapters/*/trials/
+adapters/*/.uv/
+uv.lock
+
+# OS
+.DS_Store

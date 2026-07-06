@@ -1,0 +1,29 @@
+schema_version = "1.0"
+
+[task]
+name = "dolci/dolci__code_stdio_00017_3fc7c632"
+authors = [{ name = "Allen Institute for AI" }]
+keywords = ["code", "stdio"]
+
+[metadata]
+dataset = "dolci-rl-zero-mix-7b"
+domain = "code_stdio"
+category = "coding"
+difficulty = "unknown"
+source_dataset = "hamishivi/synthetic2-rlvr-code-compressed_filtered"
+has_oracle = false
+
+[verifier]
+network_mode = "none"
+timeout_sec = 3000.0
+
+[agent]
+network_mode = "none"
+timeout_sec = 3000.0
+
+[environment]
+build_timeout_sec = 1200.0
+cpus = 1
+memory_mb = 2048
+storage_mb = 10240
+gpus = 0
