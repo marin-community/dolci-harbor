@@ -254,18 +254,31 @@ class DolciAdapter:
             return sol.encode("utf-8") if sol else None
         return None  # ifeval ships no gold response
 
-    def _write_solve_sh(self, out_dir: Path, dtype: str, content: bytes) -> None:
+    def _write_solve_sh(self, out_dir: Path, dtype: str, content) -> None:
+        """Write solution/solve.sh. When the source ships a gold answer, the
+        oracle emits it; otherwise a labelled placeholder keeps the required
+        task structure without pretending to a passing answer."""
         sol_dir = out_dir / "solution"
         sol_dir.mkdir(parents=True, exist_ok=True)
-        b64 = base64.b64encode(content).decode("ascii")
-        target = ANSWER_FILE[dtype]
-        script = (
-            "#!/bin/bash\n"
-            "# Oracle: emit the reference solution shipped with the dataset.\n"
-            "set -e\n"
-            f"mkdir -p /app\n"
-            f"echo {b64} | base64 -d > /app/{target}\n"
-        )
+        if content is None:
+            script = (
+                "#!/bin/bash\n"
+                "# No reference solution ships with this source example "
+                "(oracle_verified = none).\n"
+                "# This placeholder preserves the Harbor task structure; it does "
+                "not produce a passing answer.\n"
+                "exit 0\n"
+            )
+        else:
+            b64 = base64.b64encode(content).decode("ascii")
+            target = ANSWER_FILE[dtype]
+            script = (
+                "#!/bin/bash\n"
+                "# Oracle: emit the reference solution shipped with the dataset.\n"
+                "set -e\n"
+                "mkdir -p /app\n"
+                f"echo {b64} | base64 -d > /app/{target}\n"
+            )
         path = sol_dir / "solve.sh"
         path.write_text(script)
         path.chmod(path.stat().st_mode | stat.S_IEXEC | stat.S_IXGRP | stat.S_IXOTH)
@@ -294,11 +307,9 @@ class DolciAdapter:
             f"oracle_verified = {_toml_str(oracle_verified)}",
             "",
             "[verifier]",
-            'network_mode = "none"',
             f"timeout_sec = {timeout}",
             "",
             "[agent]",
-            'network_mode = "none"',
             f"timeout_sec = {timeout}",
             "",
             "[environment]",
@@ -307,6 +318,8 @@ class DolciAdapter:
             "memory_mb = 2048",
             "storage_mb = 10240",
             "gpus = 0",
+            # Deps are baked into the image; no internet is needed at run/verify time.
+            "allow_internet = false",
         ]
         (out_dir / "task.toml").write_text("\n".join(lines) + "\n")
 
@@ -364,8 +377,9 @@ class DolciAdapter:
                             ignore=shutil.ignore_patterns("__pycache__", "*.pyc"))
         (tests_dir / "spec.json").write_text(json.dumps(spec, ensure_ascii=False))
 
-        if has_oracle:
-            self._write_solve_sh(out_dir, dtype, oracle)
+        # Always emit solution/solve.sh (required task file); it is the real
+        # oracle when has_oracle, else a labelled placeholder.
+        self._write_solve_sh(out_dir, dtype, oracle if has_oracle else None)
 
         self._write_task_toml(out_dir, task_id, record, dtype, has_oracle,
                               oracle_verified)

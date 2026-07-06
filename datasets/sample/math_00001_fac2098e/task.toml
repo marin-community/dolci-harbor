@@ -15,11 +15,9 @@ has_oracle = true
 oracle_verified = "trivial"
 
 [verifier]
-network_mode = "none"
 timeout_sec = 3000.0
 
 [agent]
-network_mode = "none"
 timeout_sec = 3000.0
 
 [environment]
@@ -28,3 +26,4 @@ cpus = 1
 memory_mb = 2048
 storage_mb = 10240
 gpus = 0
+allow_internet = false
