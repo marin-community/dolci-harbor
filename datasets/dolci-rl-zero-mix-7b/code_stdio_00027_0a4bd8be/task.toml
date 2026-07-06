@@ -12,6 +12,7 @@ category = "coding"
 difficulty = "unknown"
 source_dataset = "hamishivi/klear-code-rlvr_filtered"
 has_oracle = false
+oracle_verified = "none"
 
 [verifier]
 network_mode = "none"

@@ -12,6 +12,7 @@ category = "coding"
 difficulty = "easy"
 source_dataset = "hamishivi/rlvr_acecoder_filtered_filtered"
 has_oracle = true
+oracle_verified = "verified"
 
 [verifier]
 network_mode = "none"

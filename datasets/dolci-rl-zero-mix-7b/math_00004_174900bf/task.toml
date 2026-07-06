@@ -12,6 +12,7 @@ category = "reasoning"
 difficulty = "unknown"
 source_dataset = "hamishivi/DAPO-Math-17k-Processed_filtered"
 has_oracle = true
+oracle_verified = "trivial"
 
 [verifier]
 network_mode = "none"

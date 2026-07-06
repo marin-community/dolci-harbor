@@ -12,6 +12,7 @@ category = "instruction-following"
 difficulty = "unknown"
 source_dataset = "hamishivi/IF_multi_constraints_upto5_filtered"
 has_oracle = false
+oracle_verified = "none"
 
 [verifier]
 network_mode = "none"
