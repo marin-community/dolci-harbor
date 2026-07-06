@@ -5,6 +5,13 @@ Converts [`allenai/Dolci-RL-Zero-Mix-7B`](https://huggingface.co/datasets/allena
 [Harbor](https://www.harborframework.com) task format, one self-contained,
 container-verified task per example.
 
+> **Samples vs. the full dataset.** This adapter converts **all 46,900** examples on
+> demand. The only tasks committed to git are the **12 examples in
+> [`../../datasets/sample/`](../../datasets/sample)** (3 per domain) — an illustration,
+> not the dataset. Generate the full set with `uv run dolci` (writes to the
+> git-ignored `datasets/dolci-rl-zero-mix-7b/`, ~3.4 GB). Verified general: a 3,000-row
+> real-data run converted 2,998 rows with 0 errors (see [Verification](#verification)).
+
 ## Source dataset
 
 46,900 examples across four domains, each tagged by the `dataset` field and each
@@ -19,8 +26,11 @@ carrying a **verifiable** reward signal:
 
 ## Generated task structure
 
+Each `uv run dolci` invocation writes one directory per example into the output dir
+(default `datasets/dolci-rl-zero-mix-7b/`, git-ignored):
+
 ```
-dolci-rl-zero-mix-7b/
+<output-dir>/
 └── <domain>_<index>_<hash>/
     ├── task.toml            # config + metadata (domain, difficulty, source_dataset, has_oracle)
     ├── instruction.md       # the user turn + where to write the answer
@@ -73,7 +83,7 @@ so they can be exercised outside a container.
 cd adapters/dolci
 uv sync            # or: pip install -e .
 
-# Stream the whole dataset from the hub into datasets/dolci-rl-zero-mix-7b/
+# Stream and convert the WHOLE dataset (46,900 tasks → datasets/dolci-rl-zero-mix-7b/, git-ignored)
 uv run dolci
 
 # A small, balanced sample (useful for smoke tests)
@@ -84,11 +94,13 @@ uv run dolci --limit 500 --output-dir /tmp/dolci
 uv run dolci --local first-rows.json --overwrite
 ```
 
-Then evaluate/roll out with Harbor as usual:
+Then evaluate/roll out with Harbor as usual — against the committed sample, or against
+a full run you generated:
 
 ```bash
-harbor run -p datasets/dolci-rl-zero-mix-7b -a <agent> -m "<model>"
-harbor trial start -p datasets/dolci-rl-zero-mix-7b/<task_id>   # single task
+harbor run -p ../../datasets/sample -a <agent> -m "<model>"        # the 12 committed examples
+harbor run -p datasets/dolci-rl-zero-mix-7b -a <agent> -m "<model>"  # a full/large run you generated
+harbor trial start -p ../../datasets/sample/<task_id>             # single task
 ```
 
 ### Options
@@ -153,6 +165,19 @@ deliberately-wrong answers:
   `copy:copying_multiple` and `keywords:start_end` conflict, a correct 3× repeat
   scores 0.5 (one of two), an empty response scores 0.0, and each checker passes/
   fails a crafted response as expected.
+
+Every domain was additionally verified **end-to-end inside its container** via the
+real Harbor flow (`test.sh` → `grade.py` → `/logs/verifier/reward.txt`), running with
+`--network none` so the baked-in dependencies (math-verify, the IFEval libs + NLTK
+`punkt_tab`) are exercised offline: correct answers → 1.0 (0.5 for the conflicting
+ifeval case), wrong answers → 0.0.
+
+**Generality on real data.** Beyond the hand-checked samples, the adapter was run over
+**3,000 rows streamed live from the hub**: 2,998 converted cleanly, 2 dropped by oracle
+verification, **0 errors / 0 exceptions**. All **54 distinct IFEval instruction-IDs**
+seen were covered by the vendored registry (0 unknown), and there were **0 `code_stdio`
+decode failures** — confirming the four decoders/graders generalize past the initial
+63-row snapshot.
 
 ## Attribution & license
 

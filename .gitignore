@@ -17,5 +17,12 @@ adapters/*/trials/
 adapters/*/.uv/
 uv.lock
 
+# Full generated task sets are produced on demand by the adapter and are far too
+# large to commit (~3.4GB / ~360k files for all 46,900 rows). Only datasets/sample/
+# is tracked. The adapter's default output dir and any other full runs are ignored.
+datasets/dolci-rl-zero-mix-7b/
+datasets/full/
+datasets/*-full/
+
 # OS
 .DS_Store
